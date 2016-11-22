@@ -1,0 +1,185 @@
+---
+title: "09_explore_primeMaladie2017"
+author: "Duc-Quang Nguyen"
+date: "10/14/2016"
+output: html_document
+---
+
+# Data
+
+* [Primes de l’assurance-maladie](https://opendata.swiss/fr/dataset/health-insurance-premiums)
+
+# STUDIO
+
+Depuis l'introduction de l’assurance maladie de base en 1996, les primes se sont envolées. La prime standard a plus que doublé depuis 1996 alors que les salaires ont augmenté en moyenne que de 25% durant la même période. Les primes de l’assurance obligatoire des soins augmenteront une nouvelle fois en 2017, une hausse moyenne de la prime standard de 4,5%. 
+
+Alors que les prestations de l’assurance de base est identique partout en Suisse, le graphique ci-dessous illustre les grandes disparités du montant que les Suisses doivent débourser selon le canton et les différents assureurs, plus d'une soixantaine.
+
+**GRAPHIQUE**
+
+Pour rappel, l’assurance maladie de base est obligatoire pour toute personne résidant en Suisse. Les primes d’assurance sont individuelles et indépendantes du revenu. Elles varient en fonction de la caisse maladie, de la classe d'âge et du lieu de domicile. L’assureur doit accepter toute personne qui veut s’assurer auprès de lui. Les assurés peuvent obtenir des rabais en choisissant par exemple une franchise plus élevée ou une limitation du choix du médecin. Les moins favorisés ont droit à des réductions de primes, subventionnées par l'État et fixées par les cantons. 
+
+Puisque que la couverture de l’assurance de base est identique chez tous les assureurs, les Suisses devraient théoriquement choisir celle qui est la moins chère. Or, ce n’est pas le cas. Le nombre d’assurés changeant de caisses maladie chaque année demeure relativement faible (environ 10%).
+
+La Loi fédérale stipule qu'il est interdit de réaliser le moindre bénéfice dans le domaine de l’assurance de base. 
+
+De plus, les assureurs n’ont pas intérêt à offrir des primes trop basses par rapport à la concurrence. Par exemple, la caisse maladie la meilleur marché, Assura-Basis, a ainsi enregistré l’arrivée de quelque 300'000 nouveaux affiliés en 2014 et en 2015. Elle a bouclé l’exercice 2015 sur une perte de 258 millions de francs et a été contrainte d’augmenter fortement ses primes en 2016.
+
+Dès lors, les partis de gauche en Suisse dénonce régulièrement la «pseudo-concurrence» de l'assurance de base. Le peuple suisse s'est prononcé à plusieurs reprises aux urnes pour que l’assurance obligatoire de base soit gérée par des caisses publiques ou une caisse unique. Toutes ces initaitives ont été refusées, la dernière fois en 2014 le projet d'instaurer une caisse unique par canton a été refusée par plus de 61% des suisses. 
+
+
+
+
+
+# Notes
+
+
+Les primes de l’assurance obligatoire des soins augmenteront une nouvelle fois en 2017. Une hausse moyenne de la prime standard de 4,5%. 
+
+L’assurance maladie de base suisse est en vigueur depuis 1996 et depuis son introduction, les primes se sont envolées. Depuis 1996, la prime standard a plus que doublé alors que les salaires ont augmenté en moyenne de 25% durant la même période.
+
+Pour rappel, l’assurance maladie de base est obligatoire pour toute personne résidant en Suisse. La couverture de l’assurance de base est identique chez tous les assureurs, 63 jusqu'à présent. 
+
+
+Les primes d’assurance sont individuelles et indépendantes du revenu. Elles varient en fonction de la caisse maladie, de la classe d'âge et du lieu de domicile. Les assurés peuvent obtenir des rabais en choisissant par exemple une franchise plus élevée ou une limitation du choix du médecin. Les moins favorisés ont droit à des réductions de primes, subventionnées par l'État et fixées par les cantons. 
+
+D’autre part, l’évolution des primes diffère fortement selon le domicile de l’assuré. En effet, les Suisses ne sont pas égaux face au montant qu’ils doivent débourser, non seulement d’un canton à l’autre, mais aussi parfois à l’intérieur même de certains cantons (Zurich comporte trois zones tarifaires) 
+
+
+La concurrence entre les assureurs voulue par le législateur ne donne pas le résultat escompté. Même si le nombre d’assurés changeant de caisses maladie chaque année a augmenté, il reste à un niveau trop faible (environ 10%).
+
+Le peuple suisse s'est prononcé à plusieurs reprises à ce suet. Pour que l’assurance obligatoire de base soit gérée par des caisses publiques, qu’elle soit confiée à une caisse unique ou pour une caisse publique d'assurance-maladie. Toutes ont été refusées 
+
+http://www.swissinfo.ch/fre/politique/votation-du-28-septembre_la-caisse-maladie-unique--une-solution-ou-un-problème-/40517460
+
+http://www.swissinfo.ch/fre/assurances/29101326
+https://fr.wikipedia.org/wiki/Assurance_maladie_en_Suisse#Critiques_sur_le_syst.C3.A8me_d.27assurances_priv.C3.A9es_suisse
+
+```{r setup, include=FALSE}
+
+
+translation.file <- "input/Health insurance base 2017 - Sheet1.csv"
+data.file <- "data/Prämien_CH.csv"
+insurer.file <- "data/insurer_CH_01_10_2016.csv"
+
+library(readr)
+library(tidyr)
+library(dplyr)
+library(magrittr)
+library(countrycode)
+library(ggplot2)
+library(swiMap)
+library(swiTheme)
+library(forcats)
+
+library(forcats)
+library(viridis)
+library(ggiraph)
+
+library(htmltools)
+library(swiRcharts)
+```
+
+```{r load data, include=F}
+data.read <- read.csv(data.file)
+insurer <- read.csv(insurer.file)
+
+# basic exploration
+#lapply(data.read, unique)
+
+data.read <- data.read %>% select(-Hoheitsgebiet, -Geschäftsjahr, -Erhebungsjahr)
+
+txt <- loadTranslation(translation.file)
+
+```
+
+```{r wrangle, include=F}
+# select: tarif : BASE (not HMO, ..)
+# sans assurance accident, adultes, franchise 500.-
+dd <- data.read %>% filter(Tarif == "BASE", Unfalleinschluss == "OHN-UNF", 
+                           Altersklasse == 'AKL-ERW', Franchise == 'FRA-500', Kanton != "ZE")
+
+# order canton by average prime 
+dd %<>% group_by(Kanton, Versicherer) %>% 
+  summarise(prime = mean(Prämie)) %>% ungroup()
+ct.ordered <- dd %>% group_by(Kanton) %>% summarise(meanPrime = mean(prime)) %>% 
+  ungroup() %>% arrange(meanPrime) %>% select(Kanton) %>% unlist(use.names = F) %>% as.character()
+dd$Kanton <- factor(dd$Kanton, levels = ct.ordered)
+
+# order insurer by average prime
+insurer.ordered <- dd %>% group_by(Kanton) %>% mutate( rk = rank(prime)) %>% ungroup()
+insurer.rank <- insurer.ordered %>% group_by(Versicherer) %>% summarise(meanRank = mean(rk)) %>% 
+  ungroup() %>% arrange(meanRank)
+insurer.ordered <- insurer.rank %>% select(Versicherer)  %>% unlist(use.names = F)
+
+names(insurer.ordered) <- insurer[match(insurer.ordered, insurer[,1]), 'shortName']
+dd$insurerName <- factor(insurer[match(dd$Versicherer,  insurer[,1]), 'shortName'], levels = names(insurer.ordered))
+dd$insurerRank <- insurer.rank[match(dd$Versicherer, insurer.rank$Versicherer), 'meanRank'] %>% unlist(use.names = F)
+```
+
+
+```{r chart, include=F}
+lang <- 'FR'
+
+for(lang in colnames(txt)) {
+  ddd <- dd
+  
+  ct.lang <- switch(lang,
+          'EN' = 'eng', 'FR' = 'fre', 'DE' = 'ger',	
+          'IT' = 'ita', 'PT' = 'por', 'RU' = 'rus', 
+          'ES' = 'spa', 'JA' = 'jpn', 'ZH' = 'chi'  
+  )
+  ddd$canton <- canton_CH[match(ddd$Kanton, canton_CH$iso2), ct.lang]
+  ddd$canton <- factor(ddd$canton, canton_CH[match(ct.ordered, canton_CH$iso2), ct.lang])
+  
+  gp <- ggplot(data = ddd) + 
+    # geom_violin(aes(x = canton, y = prime, group = canton), linetype = "blank", fill = "#e5dbcd", alpha = 0.6) + 
+    geom_line(data = ddd %>% group_by(canton) %>% summarise(prime = median(prime)) %>% 
+                ungroup(), aes(x = canton, y = prime, group = 1), size = 0.5, alpha = 0.9, colour = "darkgrey") + 
+    geom_line_interactive(aes(x = canton, y = prime, group = insurerName, color = insurerRank, tooltip = insurerName, data_id = insurerName), size = 0.15, alpha = 0.25) + 
+    geom_point(aes(x = canton, y = prime, group = insurerName, color = insurerRank), size = 0.8, alpha = 0.6, shape = 18) + 
+    geom_text(data  = ddd %>% filter(Kanton == "GE"), aes(x = canton, y = prime, label = insurerName), nudge_y = -1, nudge_x = 0.35, hjust = 0, size = 2, family = "Open Sans Condensed", check_overlap = T, colour = "#330033") +
+    swi_theme(y_gridlines = F, base_size = 12, base_family = "Open Sans Condensed") + 
+    theme(
+      legend.position = "none", 
+      axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5), 
+      axis.text.y = element_text(margin=margin(0,-1.5,0,0) ),
+      plot.background=element_rect(fill= "#f3f3f2", colour = "#f3f3f2"),
+      plot.margin = unit(c(0, 0.5, -2, -0.8), "lines")
+    )+
+    scale_color_viridis(option = "C") +
+    scale_x_discrete(expand = c(0, 2.4), name = "") +
+    scale_y_continuous(name = "", expand = c(0.005,0.05), breaks = scales::pretty_breaks(n =5)) +
+    annotate("text", x = -1.3, y = 700, label = txt["ylab", lang], colour = "#2b2b2b", hjust = 0)
+  
+  igp <- ggiraph(
+    code = {print(gp)}, 
+    height_svg = 5,
+    hover_css = "stroke-width:1.7px;stroke-opacity:0.95;cursor:pointer;",  
+    width = 1,
+    fonts = list(sans = "Open Sans Condensed")
+  )
+ # igp
+  
+  source <- paste0(
+    txt['source', lang], ": ", htmlLink(txt['source.url', lang], txt['source.name', lang]), " | ",
+    txt['code', lang], ": ", htmlLink(txt['code.url', lang], txt['code.name', lang]), " | ",
+    htmlLink("http://www.swissinfo.ch", 'swissinfo.ch'), " | ",
+    htmlLink("https://twitter.com/duc_qn", '@duc_qn')    
+  )
+  
+  save_html(
+    tags$html(
+      tags$head(includeHTML("styles2.html")),
+      tags$body(    
+        h2(HTML(txt["title", lang])),
+        div(class = "descr", HTML(txt["descr", lang])),
+        div(class="container", igp),
+        div(id = "cite", HTML(source)),
+        HTML(iframeresizer)  
+      )), file = paste0("Primes_2017_byCantonInsurer_", lang, ".html"), libdir = "js", background = "#f3f3f2"
+  )
+  
+}
+
+```

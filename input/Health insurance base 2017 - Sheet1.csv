@@ -1,0 +1,12 @@
+code,EN,FR,DE,IT,PT,AR,RU,ES,JA,ZH
+title,,Assurance maladie de base - la valse des tarifs pour des prestations identiques,,,,,,,,
+descr,,"Tarifs mensuels de l'assurance maladie de base 2017 par canton et par assureur. Ces primes sont pour un adulte, sans couverture d'assurance accident, une franchise de 500.- et un modèle d'assurance standard.  Pour les cantons ayant différentes régions tarifaires, la moyenne cantonale par assureur a été calculée. Il y a 63 assureurs, la ligne grise correspond à la prime médiane cantonale. ",,,,,,,,
+ylab,,Primes mensuels (CHF),,,,,,,,
+source,Source,source,Quelle,Fonte,fonte,المصدر,Источник,Fuente,出典,来源
+source.name,The Federal Office of Public Health (FOPH),L’Office fédéral de la santé publique (OFSP),,,,,,,,
+source.url,https://opendata.swiss/en/dataset/health-insurance-premiums,https://opendata.swiss/en/dataset/health-insurance-premiums,https://opendata.swiss/en/dataset/health-insurance-premiums,https://opendata.swiss/en/dataset/health-insurance-premiums,https://opendata.swiss/en/dataset/health-insurance-premiums,https://opendata.swiss/en/dataset/health-insurance-premiums,https://opendata.swiss/en/dataset/health-insurance-premiums,https://opendata.swiss/en/dataset/health-insurance-premiums,https://opendata.swiss/en/dataset/health-insurance-premiums,https://opendata.swiss/en/dataset/health-insurance-premiums
+code,Code,code,Code,Codice,código,الرمز,Код,código,コード,代码
+code.name,ggiraph,ggiraph,ggiraph,ggiraph,ggiraph,ggiraph,ggiraph,ggiraph,ggiraph,ggiraph
+code.url,https://github.com/davidgohel/ggiraph,https://github.com/davidgohel/ggiraph,https://github.com/davidgohel/ggiraph,https://github.com/davidgohel/ggiraph,https://github.com/davidgohel/ggiraph,https://github.com/davidgohel/ggiraph,https://github.com/davidgohel/ggiraph,https://github.com/davidgohel/ggiraph,https://github.com/davidgohel/ggiraph,https://github.com/davidgohel/ggiraph
+title.font,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,OpenSans-CondensedBold,PingFang SC Semibold,PingFang SC Semibold
+base.font,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,OpenSans-CondensedLight,Hiragino Sans W1,PingFang SC Light
