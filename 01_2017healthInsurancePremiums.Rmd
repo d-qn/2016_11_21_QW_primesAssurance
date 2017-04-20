@@ -9,54 +9,7 @@ output: html_document
 
 * [Primes de l’assurance-maladie](https://opendata.swiss/fr/dataset/health-insurance-premiums)
 
-# STUDIO
-
-Depuis l'introduction de l’assurance maladie de base en 1996, les primes se sont envolées. La prime standard a plus que doublé depuis 1996 alors que les salaires ont augmenté en moyenne que de 25% durant la même période. Les primes de l’assurance obligatoire des soins augmenteront une nouvelle fois en 2017, une hausse moyenne de la prime standard de 4,5%. 
-
-Alors que les prestations de l’assurance de base est identique partout en Suisse, le graphique ci-dessous illustre les grandes disparités du montant que les Suisses doivent débourser selon le canton et les différents assureurs, plus d'une soixantaine.
-
-**GRAPHIQUE**
-
-Pour rappel, l’assurance maladie de base est obligatoire pour toute personne résidant en Suisse. Les primes d’assurance sont individuelles et indépendantes du revenu. Elles varient en fonction de la caisse maladie, de la classe d'âge et du lieu de domicile. L’assureur doit accepter toute personne qui veut s’assurer auprès de lui. Les assurés peuvent obtenir des rabais en choisissant par exemple une franchise plus élevée ou une limitation du choix du médecin. Les moins favorisés ont droit à des réductions de primes, subventionnées par l'État et fixées par les cantons. 
-
-Puisque que la couverture de l’assurance de base est identique chez tous les assureurs, les Suisses devraient théoriquement choisir celle qui est la moins chère. Or, ce n’est pas le cas. Le nombre d’assurés changeant de caisses maladie chaque année demeure relativement faible (environ 10%).
-
-La Loi fédérale stipule qu'il est interdit de réaliser le moindre bénéfice dans le domaine de l’assurance de base. 
-
-De plus, les assureurs n’ont pas intérêt à offrir des primes trop basses par rapport à la concurrence. Par exemple, la caisse maladie la meilleur marché, Assura-Basis, a ainsi enregistré l’arrivée de quelque 300'000 nouveaux affiliés en 2014 et en 2015. Elle a bouclé l’exercice 2015 sur une perte de 258 millions de francs et a été contrainte d’augmenter fortement ses primes en 2016.
-
-Dès lors, les partis de gauche en Suisse dénonce régulièrement la «pseudo-concurrence» de l'assurance de base. Le peuple suisse s'est prononcé à plusieurs reprises aux urnes pour que l’assurance obligatoire de base soit gérée par des caisses publiques ou une caisse unique. Toutes ces initaitives ont été refusées, la dernière fois en 2014 le projet d'instaurer une caisse unique par canton a été refusée par plus de 61% des suisses. 
-
-
-
-
-
-# Notes
-
-
-Les primes de l’assurance obligatoire des soins augmenteront une nouvelle fois en 2017. Une hausse moyenne de la prime standard de 4,5%. 
-
-L’assurance maladie de base suisse est en vigueur depuis 1996 et depuis son introduction, les primes se sont envolées. Depuis 1996, la prime standard a plus que doublé alors que les salaires ont augmenté en moyenne de 25% durant la même période.
-
-Pour rappel, l’assurance maladie de base est obligatoire pour toute personne résidant en Suisse. La couverture de l’assurance de base est identique chez tous les assureurs, 63 jusqu'à présent. 
-
-
-Les primes d’assurance sont individuelles et indépendantes du revenu. Elles varient en fonction de la caisse maladie, de la classe d'âge et du lieu de domicile. Les assurés peuvent obtenir des rabais en choisissant par exemple une franchise plus élevée ou une limitation du choix du médecin. Les moins favorisés ont droit à des réductions de primes, subventionnées par l'État et fixées par les cantons. 
-
-D’autre part, l’évolution des primes diffère fortement selon le domicile de l’assuré. En effet, les Suisses ne sont pas égaux face au montant qu’ils doivent débourser, non seulement d’un canton à l’autre, mais aussi parfois à l’intérieur même de certains cantons (Zurich comporte trois zones tarifaires) 
-
-
-La concurrence entre les assureurs voulue par le législateur ne donne pas le résultat escompté. Même si le nombre d’assurés changeant de caisses maladie chaque année a augmenté, il reste à un niveau trop faible (environ 10%).
-
-Le peuple suisse s'est prononcé à plusieurs reprises à ce suet. Pour que l’assurance obligatoire de base soit gérée par des caisses publiques, qu’elle soit confiée à une caisse unique ou pour une caisse publique d'assurance-maladie. Toutes ont été refusées 
-
-http://www.swissinfo.ch/fre/politique/votation-du-28-septembre_la-caisse-maladie-unique--une-solution-ou-un-problème-/40517460
-
-http://www.swissinfo.ch/fre/assurances/29101326
-https://fr.wikipedia.org/wiki/Assurance_maladie_en_Suisse#Critiques_sur_le_syst.C3.A8me_d.27assurances_priv.C3.A9es_suisse
-
 ```{r setup, include=FALSE}
-
 
 translation.file <- "input/Health insurance base 2017 - Sheet1.csv"
 data.file <- "data/Prämien_CH.csv"
@@ -70,9 +23,6 @@ library(countrycode)
 library(ggplot2)
 library(swiMap)
 library(swiTheme)
-library(forcats)
-
-library(forcats)
 library(viridis)
 library(ggiraph)
 
@@ -83,9 +33,6 @@ library(swiRcharts)
 ```{r load data, include=F}
 data.read <- read.csv(data.file)
 insurer <- read.csv(insurer.file)
-
-# basic exploration
-#lapply(data.read, unique)
 
 data.read <- data.read %>% select(-Hoheitsgebiet, -Geschäftsjahr, -Erhebungsjahr)
 
@@ -121,13 +68,9 @@ dd$insurerRank <- insurer.rank[match(dd$Versicherer, insurer.rank$Versicherer), 
 ```{r chart, include=F}
 lang <- 'FR'
 
-
-#txt <- txt[,-which(colnames(txt) == 'AR')]
-
 for(lang in colnames(txt)) {
   cat("\n", lang)
   langr <- ifelse(lang == 'AR', 'EN', lang)
-  
   
   ddd <- dd
   
