@@ -121,13 +121,21 @@ dd$insurerRank <- insurer.rank[match(dd$Versicherer, insurer.rank$Versicherer), 
 ```{r chart, include=F}
 lang <- 'FR'
 
+
+#txt <- txt[,-which(colnames(txt) == 'AR')]
+
 for(lang in colnames(txt)) {
+  cat("\n", lang)
+  langr <- ifelse(lang == 'AR', 'EN', lang)
+  
+  
   ddd <- dd
   
   ct.lang <- switch(lang,
           'EN' = 'eng', 'FR' = 'fre', 'DE' = 'ger',	
           'IT' = 'ita', 'PT' = 'por', 'RU' = 'rus', 
-          'ES' = 'spa', 'JA' = 'jpn', 'ZH' = 'chi'  
+          'ES' = 'spa', 'JA' = 'jpn', 'ZH' = 'chi',
+          'AR' = 'eng'
   )
   ddd$canton <- canton_CH[match(ddd$Kanton, canton_CH$iso2), ct.lang]
   ddd$canton <- factor(ddd$canton, canton_CH[match(ct.ordered, canton_CH$iso2), ct.lang])
@@ -145,12 +153,12 @@ for(lang in colnames(txt)) {
       axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5), 
       axis.text.y = element_text(margin=margin(0,-1.5,0,0) ),
       plot.background=element_rect(fill= "#f3f3f2", colour = "#f3f3f2"),
-      plot.margin = unit(c(0, 0.5, -2, -0.8), "lines")
+      plot.margin = unit(c(0, 0.5, ifelse(lang == 'ZH', 1, -2), -0.8), "lines")
     )+
     scale_color_viridis(option = "C") +
     scale_x_discrete(expand = c(0, 2.4), name = "") +
     scale_y_continuous(name = "", expand = c(0.005,0.05), breaks = scales::pretty_breaks(n =5)) +
-    annotate("text", x = -1.3, y = 700, label = txt["ylab", lang], colour = "#2b2b2b", hjust = 0)
+    annotate("text", x = -1.3, y = 700, label = txt["ylab", langr], colour = "#2b2b2b", hjust = 0)
   
   igp <- ggiraph(
     code = {print(gp)}, 
