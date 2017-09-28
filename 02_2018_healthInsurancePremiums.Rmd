@@ -1,0 +1,140 @@
+---
+title: "prime Maladie 2018"
+author: "Duc-Quang Nguyen"
+date: "09/26/2017"
+output: html_document
+---
+
+# Data
+
+* [Primes de l’assurance-maladie](https://opendata.swiss/fr/dataset/health-insurance-premiums)
+
+```{r setup, include=FALSE}
+
+translation.file <- "input/Health insurance base 2018 - Sheet1.csv"
+data.file <- "data/Prämien_CH.csv"
+insurer.file <- "data/insurer_CH_01_10_2016.csv"
+
+library(readr)
+library(tidyr)
+library(dplyr)
+library(magrittr)
+library(countrycode)
+library(ggplot2)
+library(swiMap)
+library(swiTheme)
+library(viridis)
+library(ggiraph)
+
+library(htmltools)
+library(swiRcharts)
+```
+
+```{r load data, include=F}
+data.read <- read.csv2(data.file, encoding = "latin1")
+insurer <- read.csv(insurer.file)
+
+data.read <- data.read %>% select(-Hoheitsgebiet, -Geschäftsjahr, -Erhebungsjahr)
+data.read$Prämie <- as.numeric(as.character(data.read$Prämie))
+
+# Number of insurers
+length(unique(data.read$Versicherer))
+
+txt <- loadTranslation(translation.file)
+
+```
+
+```{r wrangle, include=F}
+# select: tarif : BASE (not HMO, ..)
+# sans assurance accident, adultes, franchise 500.-
+dd <- data.read %>% filter(Tarif == "BASE", Unfalleinschluss == "OHN-UNF", 
+                           Altersklasse == 'AKL-ERW', Franchise == 'FRA-500', Kanton != "ZE")
+
+# order canton by average prime 
+dd %<>% group_by(Kanton, Versicherer) %>% 
+  summarise(prime = mean(Prämie)) %>% ungroup()
+ct.ordered <- dd %>% group_by(Kanton) %>% summarise(meanPrime = mean(prime)) %>% 
+  ungroup() %>% arrange(meanPrime) %>% select(Kanton) %>% unlist(use.names = F) %>% as.character()
+dd$Kanton <- factor(dd$Kanton, levels = ct.ordered)
+
+# order insurer by average prime
+insurer.ordered <- dd %>% group_by(Kanton) %>% mutate( rk = rank(prime)) %>% ungroup()
+insurer.rank <- insurer.ordered %>% group_by(Versicherer) %>% summarise(meanRank = mean(rk)) %>% 
+  ungroup() %>% arrange(meanRank)
+insurer.ordered <- insurer.rank %>% select(Versicherer)  %>% unlist(use.names = F)
+
+names(insurer.ordered) <- insurer[match(insurer.ordered, insurer[,1]), 'shortName']
+dd$insurerName <- factor(insurer[match(dd$Versicherer,  insurer[,1]), 'shortName'], levels = names(insurer.ordered))
+dd$insurerRank <- insurer.rank[match(dd$Versicherer, insurer.rank$Versicherer), 'meanRank'] %>% unlist(use.names = F)
+```
+
+
+```{r chart, include=F}
+lang <- 'FR'
+
+for(lang in colnames(txt)) {
+  cat("\n", lang)
+  langr <- ifelse(lang == 'AR', 'EN', lang)
+  
+  ddd <- dd
+  
+  ct.lang <- switch(lang,
+          'EN' = 'eng', 'FR' = 'fre', 'DE' = 'ger',	
+          'IT' = 'ita', 'PT' = 'por', 'RU' = 'rus', 
+          'ES' = 'spa', 'JA' = 'jpn', 'ZH' = 'chi',
+          'AR' = 'eng'
+  )
+  ddd$canton <- canton_CH[match(ddd$Kanton, canton_CH$iso2), ct.lang]
+  ddd$canton <- factor(ddd$canton, canton_CH[match(ct.ordered, canton_CH$iso2), ct.lang])
+  
+  gp <- ggplot(data = ddd) + 
+    # geom_violin(aes(x = canton, y = prime, group = canton), linetype = "blank", fill = "#e5dbcd", alpha = 0.6) + 
+    geom_line(data = ddd %>% group_by(canton) %>% summarise(prime = median(prime)) %>% 
+                ungroup(), aes(x = canton, y = prime, group = 1), size = 0.5, alpha = 0.9, colour = "darkgrey") + 
+    geom_line_interactive(aes(x = canton, y = prime, group = insurerName, color = insurerRank, tooltip = insurerName, data_id = insurerName), size = 0.15, alpha = 0.25) + 
+    geom_point(aes(x = canton, y = prime, group = insurerName, color = insurerRank), size = 0.8, alpha = 0.6, shape = 18) + 
+    geom_text(data  = ddd %>% filter(Kanton == "GE"), aes(x = canton, y = prime, label = insurerName), nudge_y = -1, nudge_x = 0.35, hjust = 0, size = 2, family = "Open Sans Condensed", check_overlap = T, colour = "#330033") +
+    swi_theme(y_gridlines = F, base_size = 12, base_family = "Open Sans Condensed") + 
+    theme(
+      legend.position = "none", 
+      axis.text.x = element_text(angle = -90, hjust = 0, vjust = 0.5), 
+      axis.text.y = element_text(margin=margin(0,-1.5,0,0) ),
+      plot.background=element_rect(fill= "#f3f3f2", colour = "#f3f3f2"),
+      plot.margin = unit(c(0, 0.5, ifelse(lang == 'ZH', 3, -2), -0.8), "lines")
+    )+
+    scale_color_viridis(option = "C") +
+    scale_x_discrete(expand = c(0, 2.4), name = "") +
+    scale_y_continuous(name = "", expand = c(0.005,0.05), breaks = scales::pretty_breaks(n =5)) +
+    annotate("text", x = -1.3, y = 700, label = txt["ylab", langr], colour = "#2b2b2b", hjust = 0)
+  
+  igp <- ggiraph(
+    code = {print(gp)}, 
+    height_svg = 5.5,
+    hover_css = "stroke-width:1.7px;stroke-opacity:0.95;cursor:pointer;",  
+   # width = 1,
+    fonts = list(sans = "Open Sans Condensed")
+  )
+ # igp
+  
+  source <- paste0(
+    txt['source', lang], ": ", htmlLink(txt['source.url', lang], txt['source.name', lang]), " | ",
+    txt['code', lang], ": ", htmlLink(txt['code.url', lang], txt['code.name', lang]), " | ",
+    htmlLink("http://www.swissinfo.ch", 'swissinfo.ch'), " | ",
+    htmlLink("https://twitter.com/duc_qn", '@duc_qn')    
+  )
+  
+  save_html(
+    tags$html(
+      tags$head(includeHTML("styles2.html")),
+      tags$body(    
+        h2(HTML(txt["title", lang])),
+        div(class = "descr", HTML(txt["descr", lang])),
+        div(class="container", igp),
+        div(id = "cite", HTML(source)),
+        HTML(iframeresizer)  
+      )), file = paste0("Primes_2018_byCantonInsurer_", lang, ".html"), libdir = "js", background = "#f3f3f2"
+  )
+  
+}
+
+```

@@ -31,11 +31,11 @@ library(swiRcharts)
 ```
 
 ```{r load data, include=F}
-data.read <- read.csv(data.file)
+data.read <- read.csv2(data.file, encoding = "latin1")
 insurer <- read.csv(insurer.file)
 
 data.read <- data.read %>% select(-Hoheitsgebiet, -Geschäftsjahr, -Erhebungsjahr)
-
+data.read$Prämie <- as.numeric(as.character(data.read$Prämie))
 txt <- loadTranslation(translation.file)
 
 ```
